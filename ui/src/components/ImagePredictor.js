@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
 import ImageButton from "./ImageButton";
 import styled from "styled-components";
+import PredictionModal from "./PredictionModal";
 
 const mobilenet = require('@tensorflow-models/mobilenet');
 
@@ -14,12 +15,6 @@ const EmptyImage = styled.div`
 
 const ImageContainer = styled.div`
   border-radius: 8px;
-`;
-
-const Prediction = styled.div`
-  font-size: 20px;
-  color: white;
-  margin-bottom: 32px;
 `;
 
 const Overlay = styled.div`
@@ -84,6 +79,10 @@ const Spinner = styled.div`
   }
 `;
 
+const Footer = styled.div`
+  position: fixed; 
+  bottom: 0;
+`;
 
 const ImagePredictor = () => {
   const [model, setModel] = useState();
@@ -91,7 +90,6 @@ const ImagePredictor = () => {
   const [prediction, setPrediction] = useState();
   const [showPrediction, setShowPrediction] = useState(false);
   const [accuracyRating, setAccuracyRating] = useState("");
-  const [guessedCorrect, setGuessedCorrect] = useState(1);
 
 
   useEffect(() => {
@@ -103,24 +101,6 @@ const ImagePredictor = () => {
 
     getAccuracyRating();
   }, []);
-
-  const saveAccuracy = () => {
-    fetch("api/add-to-accuracy",
-      {
-        method: "post",
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({accurate: guessedCorrect})
-      })
-      .then(res => {
-        res.json().then(rating => {
-          setAccuracyRating(rating.percentage);
-          setShowPrediction(false);
-          setPrediction();
-        });
-    })
-  }
 
   const readImageData = file => {
     if (file) {
@@ -203,26 +183,15 @@ const ImagePredictor = () => {
   }, [prediction]);
 
   return (
-    <div>
+    <div style={{color: "white"}}>
       {accuracyRating && <h1>Lifetime accuracy rating: {accuracyRating}%</h1>}
       <h1>What's in the picture?</h1>
-      <h2>
-        (Coyote, Cougar, Fox, Dog, Cat, or something else?)
-      </h2>
-      <h4>Image recognition software build on tensorflow</h4>
-      {
-        prediction &&
-        showPrediction ?
-          <Prediction>
-            <div>
-              {prediction.className[0].toUpperCase() + prediction.className.slice(1)}
-            </div>
-            <div>
-              {`(${(prediction.probability * 100).toFixed(2)}% sure)`}
-            </div>
-          </Prediction> :
-          <div style={{display: "inline-block", height: "52px", marginBottom: "32px"}}/>
-      }
+      <PredictionModal image={img}
+                       prediction={prediction}
+                       setPrediction={setPrediction}
+                       setShowPrediction={setShowPrediction}
+                       show={showPrediction}
+                       setAccuracyRating={setAccuracyRating}/>
       <ImageContainer>
         {img ?
           <img alt="The item to be predicted" src={img} height={300}/> :
@@ -234,18 +203,6 @@ const ImagePredictor = () => {
                    setPrediction={setPrediction}/>
       <div>
         {
-          prediction && showPrediction &&
-            <>
-              <h3>Was my guess correct?</h3>
-          <div onChange={(e) => setGuessedCorrect(e.target.value)}>
-            <input type="radio" value={1} name="correct"/> Yes
-            <input type="radio" value={0} name="correct"/> No
-          </div>
-              <button onClick={saveAccuracy}>save</button>
-            </>        }
-      </div>
-      <div>
-        {
           prediction &&
           !showPrediction &&
           <Overlay>
@@ -253,6 +210,9 @@ const ImagePredictor = () => {
           </Overlay>
         }
       </div>
+      <Footer>
+        <h4>Image recognition software built on tensorflow</h4>
+      </Footer>
     </div>
   )
 }
