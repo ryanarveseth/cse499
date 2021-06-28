@@ -1,88 +1,9 @@
 import React, {useEffect, useState} from "react";
 import ImageButton from "./ImageButton";
-import styled from "styled-components";
 import PredictionModal from "./PredictionModal";
+import {EmptyImage, Footer, ImageContainer, Overlay, Spinner} from "../styles";
 
 const mobilenet = require('@tensorflow-models/mobilenet');
-
-
-const EmptyImage = styled.div`
-  background-color: lightGrey;
-  height: 320px; 
-  width: 320px;
-  margin: 0 auto;
-`;
-
-const ImageContainer = styled.div`
-  border-radius: 8px;
-`;
-
-const Overlay = styled.div`
-  height: 100vh;
-  width: 100vw;
-  background: rgba(0,0,0,0.5);
-  position: fixed;
-  z-index: 2;
-  top: 0;
-  left: 0;
-`;
-
-const Spinner = styled.div`
-  border-radius: 50%;
-  width: 2.5em;
-  height: 2.5em;
-  -webkit-animation-fill-mode: both;
-  animation-fill-mode: both;
-  -webkit-animation: load7 1.8s infinite ease-in-out;
-  animation: load7 1.8s infinite ease-in-out;
-  color: #20bf6b;
-  font-size: 10px;
-  margin: 80px auto;
-  position: relative;
-  text-indent: -9999em;
-  -webkit-transform: translateZ(0);
-  -ms-transform: translateZ(0);
-  transform: translateZ(0);
-  -webkit-animation-delay: -0.16s;
-  animation-delay: -0.16s;
-  
-  z-index: 3;
-
-  &:before {
-    border-radius: 50%;
-    width: 2.5em;
-    height: 2.5em;
-    -webkit-animation-fill-mode: both;
-    animation-fill-mode: both;
-    -webkit-animation: load7 1.8s infinite ease-in-out;
-    animation: load7 1.8s infinite ease-in-out;
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -3.5em;
-    -webkit-animation-delay: -0.32s;
-    animation-delay: -0.32s;
-  }
-  
-  &:after {
-    border-radius: 50%;
-    width: 2.5em;
-    height: 2.5em;
-    -webkit-animation-fill-mode: both;
-    animation-fill-mode: both;
-    -webkit-animation: load7 1.8s infinite ease-in-out;
-    animation: load7 1.8s infinite ease-in-out;
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 3.5em;
-  }
-`;
-
-const Footer = styled.div`
-  position: fixed; 
-  bottom: 0;
-`;
 
 const ImagePredictor = () => {
   const [model, setModel] = useState();
@@ -134,6 +55,12 @@ const ImagePredictor = () => {
 
   useEffect(() => {
 
+    const isInArray = (str, array) => {
+      for (let dog of array) if (str.includes(dog)) return true;
+      return false;
+    }
+
+
     const getPrediction = async () => {
       if (model !== undefined && img !== undefined) {
         const inputImage = document.createElement('img');
@@ -142,7 +69,10 @@ const ImagePredictor = () => {
         inputImage.onload = async () => {
           const predictionsData = await model.classify(inputImage, 1);
 
+          const dogBreeds = await (await fetch("/api/get-dog-breeds")).json();
+
           let {className, probability} = predictionsData && predictionsData.length > 0 && predictionsData[0];
+          console.log("classname", className);
 
           if (className.includes("coyote")) {
             className = "Coyote";
@@ -156,10 +86,12 @@ const ImagePredictor = () => {
             className = "Fox";
           } else if (className.includes("cat")) {
             className = "Cat";
-          } else if (className.includes("dog")) {
+          } else if (isInArray(className, dogBreeds) || className.includes("dog")) {
             className = "Dog";
           } else {
-            className = `Unknown image. Is it a ${className.split(",").map(guess => guess.trim())[0]}?`
+            const guess = className.split(",").map(guess => guess.trim())[0];
+            const startsWithVowel = ["a", "e", "i", "o", "u"].some(letter => letter === guess.substring(0,1).toLowerCase()) ? "n" : "";
+            className = `Unknown image. Is it a${startsWithVowel} ${guess}?`
           }
 
           setPrediction({probability: probability, className: className});

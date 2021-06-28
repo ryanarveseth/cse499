@@ -18,6 +18,7 @@ const PORT = process.env.PORT || 5000 // So we can run on heroku || (OR) localho
 const mongoose = require('mongoose');
 const flash = require('connect-flash');
 const Accuracy = require("./Accuracy");
+const fetch = require('node-fetch');
 
 require('dotenv').config();
 
@@ -82,6 +83,14 @@ app.use(express.static(path.resolve(__dirname, '../ui/build')))
       .then(totalAccuracy => {
         return res.send(getTotalAccuracy(totalAccuracy))
       });
+  })
+  .get("/api/get-dog-breeds", async (req, res) => {
+    console.log("process.env.dog_api", process.env.DOG_API_URL);
+    const dogs = await (await fetch(process.env.DOG_API_URL, {headers: {"x-api-key": process.env.DOG_API_KEY}})).json();
+    let breeds = dogs.map(breed => breed.name.toLowerCase());
+    breeds = ["terrier", "pomeranian", ...breeds];
+
+    res.send(breeds);
   });
 
 mongoose
