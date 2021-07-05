@@ -74,18 +74,16 @@ app.use(express.static(path.resolve(__dirname, '../ui/build')))
         })
     });
   })
+
   .get("/api/get-accuracy", (req, res) => {
-
-    console.log("getting accuracy");
-
     return Accuracy
       .find()
       .then(totalAccuracy => {
         return res.send(getTotalAccuracy(totalAccuracy))
       });
   })
+
   .get("/api/get-dog-breeds", async (req, res) => {
-    console.log("process.env.dog_api", process.env.DOG_API_URL);
     const dogs = await (await fetch(process.env.DOG_API_URL, {headers: {"x-api-key": process.env.DOG_API_KEY}})).json();
     let breeds = dogs.map(breed => breed.name.toLowerCase());
     breeds = ["terrier", "pomeranian", ...breeds];

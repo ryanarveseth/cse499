@@ -22,11 +22,6 @@ export const EmptyImage = styled.div`
   margin: 0 auto;
 `;
 
-export const Radio = styled.div`
-    padding: 32px;
- 
-`;
-
 export const Button = styled.button`
   padding: 12px 20px;
   border-radius: 8px;
@@ -160,4 +155,26 @@ export const SelectImageButton = styled.button`
     border-color: white;
     transition: all .3s ease 0s;
   }
+`;
+
+export const ButtonToggleLeft = styled.button`
+  height: 40px;
+  width: 60px;
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+  color: black;
+  background-color: white;
+  border: 2px solid #20bf6b;
+  cursor: pointer; 
+`;
+
+export const ButtonToggleRight = styled.button`
+  height: 40px;
+  width: 60px;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+  color: black;
+  background-color: white;
+  border: 2px solid FireBrick;
+  cursor: pointer;
 `;

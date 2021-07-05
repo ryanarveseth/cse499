@@ -1,5 +1,14 @@
 import React, {useState} from "react";
-import {CloseButton, EmptyImage, Modal, Overlay, Prediction, Radio, SubmitButton} from "../styles";
+import {
+  ButtonToggleLeft,
+  ButtonToggleRight,
+  CloseButton,
+  EmptyImage,
+  Modal,
+  Overlay,
+  Prediction,
+  SubmitButton
+} from "../styles";
 
 const PredictionModal = ({show, prediction, image, setPrediction, setShowPrediction, setAccuracyRating}) => {
   const [guessedCorrect, setGuessedCorrect] = useState(1);
@@ -37,9 +46,18 @@ const PredictionModal = ({show, prediction, image, setPrediction, setShowPredict
                 <h2>
                   {prediction.className[0].toUpperCase() + prediction.className.slice(1)}
                 </h2>
-                <h4>
+                <p>
                   {`(${(prediction.probability * 100).toFixed(2)}% confidence level)`}
-                </h4>
+                </p>
+                <h4>Was my guess correct?</h4>
+                <div>
+                  <ButtonToggleLeft style={{backgroundColor: !!guessedCorrect ? "#20bf6b" : ""}} onClick={() => setGuessedCorrect(1)}>
+                    Yes
+                  </ButtonToggleLeft>
+                  <ButtonToggleRight style={{backgroundColor: !guessedCorrect ? "FireBrick" : ""}} onClick={() => setGuessedCorrect(0)}>
+                    No
+                  </ButtonToggleRight>
+                </div>
               </Prediction> :
               <div style={{display: "inline-block", height: "52px", marginBottom: "32px"}}/>
           }
@@ -54,11 +72,6 @@ const PredictionModal = ({show, prediction, image, setPrediction, setShowPredict
           {
             prediction && show &&
             <>
-              <h3>Was my guess correct?</h3>
-              <Radio onChange={(e) => setGuessedCorrect(e.target.value)}>
-                <label><input type="radio" value={1} name="correct"/> Yes</label>
-                <label><input type="radio" value={0} name="correct"/> No</label>
-              </Radio>
               <div style={{display: "flex", float: "right"}}>
                 <CloseButton onClick={closeModal}>Close</CloseButton>
                 <SubmitButton onClick={saveAccuracy}>Save and Close</SubmitButton>
