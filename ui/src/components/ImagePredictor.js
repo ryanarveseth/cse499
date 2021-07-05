@@ -66,33 +66,37 @@ const ImagePredictor = () => {
         const inputImage = document.createElement('img');
         inputImage.src = img;
 
+        const getPredictionClassName = (className, dogBreeds) => {
+          if (className.toLowerCase().includes("coyote")) {
+            return "Coyote";
+          } else if (className.toLowerCase().includes("cougar") ||
+            className.includes("mountain") ||
+            className.includes("catamount") ||
+            className.includes("puma") ||
+            className.includes("panther")) {
+            return "Cougar";
+          } else if (className.includes("fox")) {
+            return "Fox";
+          } else if (className.includes("cat")) {
+            return "Cat";
+          } else if (isInArray(className, dogBreeds) || className.includes("dog")) {
+            return "Dog";
+          } else {
+            const guess = className.split(",").map(guess => guess.trim())[0];
+            const startsWithVowel = ["a", "e", "i", "o", "u"]
+              .some(letter => letter === guess.substring(0,1).toLowerCase()) ? "n" : "";
+
+            return `Unknown image. Is it a${startsWithVowel} ${guess}?`
+          }
+        }
+
         inputImage.onload = async () => {
           const predictionsData = await model.classify(inputImage, 1);
 
           const dogBreeds = await (await fetch("/api/get-dog-breeds")).json();
 
           let {className, probability} = predictionsData && predictionsData.length > 0 && predictionsData[0];
-          console.log("classname", className);
-
-          if (className.includes("coyote")) {
-            className = "Coyote";
-          } else if (className.includes("cougar") ||
-            className.includes("mountain") ||
-            className.includes("catamount") ||
-            className.includes("puma") ||
-            className.includes("panther")) {
-            className = "Cougar";
-          } else if (className.includes("fox")) {
-            className = "Fox";
-          } else if (className.includes("cat")) {
-            className = "Cat";
-          } else if (isInArray(className, dogBreeds) || className.includes("dog")) {
-            className = "Dog";
-          } else {
-            const guess = className.split(",").map(guess => guess.trim())[0];
-            const startsWithVowel = ["a", "e", "i", "o", "u"].some(letter => letter === guess.substring(0,1).toLowerCase()) ? "n" : "";
-            className = `Unknown image. Is it a${startsWithVowel} ${guess}?`
-          }
+          className = getPredictionClassName(className.toLowerCase(), dogBreeds);
 
           setPrediction({probability: probability, className: className});
         }
